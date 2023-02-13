@@ -1,0 +1,43 @@
+                      18/09/18
+
+Todos los programas por defecto, abren 3 archivos por defecto.
+
+  - Stdin    =  "Entrada estandar" por teclado.
+  - Stdout   =  "Salida estandar" por terminal/consola.
+  - Stderr   =  "terminal"
+
+Al usar la funcion "printf" escribe la cadena en el archivo stdout,
+lo mismo ocurre con "fprintf" solo que debemos aclararle donde guardar la linea.
+
+- getchar() lee un caractér (1 byte) y lo devuelve como un entero (4 bytes).
+ ¿Por que un int y no un char? Porque si devolviera un char, se perderia la informacion
+  del salto de linea o fin de linea.
+
+- putchar() lee un caractér (1 byte) y lo devuelve.
+
+- Para usar el manual: man. (man 3 es el de C)
+
+- Si al compilar usamos la opcion -Wall, el compilador brinda mucha información extra.
+
+- Para pasar argumentos al programa: ./prog 12    - Donde "prog" es el nombre del programa y "12" el argumento.
+  Declararemos el main de la siguiente forma:
+
+  /**
+      int main (int argc, char *argv[]){
+
+      }
+  */
+    Donde: argc es la cantidad de argimentos que toma de linea de comandos.
+    Y argv es el arreglo de cadenas con cada argumento, es un arreglo de punteros.
+
+EJEMPLO:
+        argv: [P0,P1,P2,NULL]
+        Al ejecutar el comando: $ ./prog arg1 arg2
+        ->  argv = [prog,arg1,arg2,NULL]
+
+   El sistema operativo se encarga de determinar el numero de argumentos (establecer el valor de argc).
+   Y notar que el nombre del programa se toma como un parámetro.
+
+Para pasar de cadenas de numeros a enteros:
+  #include <stdlib.h>
+    strtol() ó atoi()

@@ -1,0 +1,29 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |12)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(define-struct casa [p d s z])
+;una casa (make-casa p d s z)
+;interpretacion: Una casa representa el propietario, la direccion, la superficie en metros cuadrados y la zona
+
+;Intepreta una zona con un string, que se encuentra en una estructura "casa"
+;zona: Casa -> Number
+;A partir de la zona ingresada nos dira cuanto cuesta el metro cuadrado en ella.
+(define (zona z) (cond [(string=? "A" (casa-z z)) 20000]
+                       [(string=? "B" (casa-z z)) 15000]
+                       [(string=? "C" (casa-z z)) 10000]
+                       [(string=? "D" (casa-z z))  5000]
+                       [else 0]))
+
+(define EJEMPLO (make-casa "José Romero" "Rueda 3456" 120 "C"))
+
+;Se representara el nombre del propietario, la direccion, la superficie del terreno y la zona en la que se encuentra dentro de
+;una estructura "casa", y un texto mediante un string.
+;venta: Casa -> String
+;Toma los datos de la casa y dara como resultado una string con el nombre del propietario, su direccion y el precio de la propiedad.
+(define (venta c) (if (casa? c) (if (not (= 0(zona c))) (string-append "El señor " (casa-p c) " recibirá " (number->string (impuesto c)) " pesos por la propiedad ubicada en la calle " (casa-d c) ".") "No se puede calcular el precio de venta por no disponer de los valores del metro cuadrado para la zona solicitada") "Tipo de dato incorrecto"))
+
+;Se representa el precio de la propiedad mediante un numero
+;neto: Casa -> Number
+;Se toma el precio de la propiedad y devuelve el valor neto despues de la aplicacion de impuestos
+(define (impuesto c) (cond [(< 1000000 (* (zona c) (casa-s c))) (* (zona c) (casa-s c) 0.95)]
+                           [else (* (zona c) (casa-s c) 0.97)]))

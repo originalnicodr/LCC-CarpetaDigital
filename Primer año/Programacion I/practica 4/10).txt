@@ -1,0 +1,41 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |10)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(require racket/date)
+
+;auto es (make-auto String Number String Number)
+;Interpretación: auto representa el modelo del auto, el año, el tipo de combustible que usa y el rendimiento optimo expresado en km/l
+(define-struct auto [Modelo Año Combustible Rendimiento])
+(define AÑO 2017) ;año actual
+(define GOL (make-auto "Gol" 2013 "nafta" 13)) ;ejemplo de auto
+
+;Representa las caracteristicas de un auto con una estructura "auto", la cantidad de kilometros a recorrer con un numero y el costo
+;con un numero.
+;costo-viaje: Auto Number -> Number
+;Calcula el costo del viaje.
+(define (costo-viaje a k) (+ (* (/ k (* (antiguedad a) (auto-Rendimiento a))) (ccombustible a)) (detector-peaje k)))
+  
+;Representa los años del auto en numeros, y un porcentaje de rendimiento en numeros.
+;antiguedad: Auto -> Number
+;Toma la antiguedad del auto y entrega el porcentaje de rendimiento reducido
+(define (antiguedad a) (cond [(< 15 (- AÑO (auto-Año a))) 0.85]
+                             [(< 10 (- AÑO (auto-Año a))) 0.90]
+                             [(< 5  (- AÑO (auto-Año a))) 0.94]
+                             [(< 1  (- AÑO (auto-Año a))) 0.98]
+                             [else 1]))
+
+;Representa un tipo de combustible con un string, y el costo de este con un numero.
+;ccombustible: Auto -> Number
+;Se recibe un tipo de combustible y se da el costo por litro de este.
+
+(define (ccombustible a) (cond [(string=? "nafta" (auto-Combustible a)) 19]
+                               [(string=? "diesel" (auto-Combustible a)) 17]))
+
+
+
+;Representa cantidad de kilometros mediante numeros, y el costo total por peajes con numeros.
+;detector-peaje: Number -> Number
+;A partir de la cantidad de kilometros ingresados, se da costo total en peajes a pagar.
+(define (detector-peaje k) (* (quotient k 100) 50))
+(check-expect (costo-viaje GOL 450) (+ (* (/ 450 12.74) 19) 200))
+

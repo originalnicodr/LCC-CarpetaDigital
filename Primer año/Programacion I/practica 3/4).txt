@@ -1,0 +1,24 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |4)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(require 2htdp/image)
+(require 2htdp/universe)
+(define ALTO 300)
+(define ANCHO 300)
+(define RADIO 50)
+(define DELTA 5)
+
+; pantalla: Estado -> Image
+(define (pantalla a) (place-image (circle RADIO "solid" "blue") (/ ALTO 2) a
+     (empty-scene ALTO ANCHO)))
+(define (eventokeyboard a k) (cond [(key=? k "up") (if (< (- a DELTA) RADIO) a (- a DELTA))]
+                                   [(key=? k "down") (if (> (+ a DELTA) (- ALTO RADIO)) a (+ a DELTA))]
+                                   [(key=? k " ") (/ ALTO 2)]
+                                   [else a]))
+(define (mouse-handler n x y event) (cond [(string=? event "button-down") y]
+                                          [else n]))
+
+
+[big-bang (/ ALTO 2) [to-draw pantalla]
+          [on-key eventokeyboard]
+              [on-mouse mouse-handler]]

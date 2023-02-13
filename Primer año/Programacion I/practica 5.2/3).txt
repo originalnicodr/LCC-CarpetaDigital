@@ -1,0 +1,64 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname |3)|) (read-case-sensitive #t) (teachpacks ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")))))
+;fold (x x -> y) c list(x) -> x
+
+(define (fold f c l) (cond [(empty? l) c]
+                           [(cons? l) (f (first l) (fold f c (rest l)))])) ;revisar como funciona el f del if
+
+;9)
+
+;(fold and #t lista de booleanos)
+;(fold or #f lista de booleanos)
+
+(define (y a b) (and a b))
+;Representamos valores logicos con un booleano
+;y: Boolean Boolean -> Boolean
+;Si los dos elemenos son verdaderos, entonces dara verdadero. Caso contrario, falso.
+
+(define (o a b) (or a b))
+;Representamos valores logicos con un booleano
+;o: Boolean Boolean -> Boolean
+;Si Un elemento es verdadero, entonces dara verdadero. Caso contrario, falso.
+
+(check-expect (fold y #t (list #t #t #t #f #t)) #f)
+(check-expect (fold y #t (list #t #t #t)) #t)
+(check-expect (fold o #f (list #f)) #f)
+(check-expect (fold o #f (list #f #t #f #f)) #t)
+
+;11)
+
+(define (suma x y) (+ x y))
+;representa numeros con numeros
+;suma: Number Number -> Number
+;Suma dos numeros
+
+(define (mapeo f l) (cond [(empty? l) '()]
+                        [(cons? l) (cons (f (first l)) (mapeo f (rest l)))]))
+
+(define (haceuno a) 1)
+;Representa un uno con un numero
+;haceuno: -> 1
+;Convierte todo elemento a un uno
+
+;(fold masuno c lista de elementos)
+
+(check-expect (fold suma 0 (mapeo haceuno (list "hola" 7 #t))) 3)
+
+;Convierto todos los elementos a 1 y los sumo
+
+;26)
+
+(define (producto a b) (* a b))
+
+;(fold producto 1 lista de numeros)
+
+(check-expect (fold producto 1 (list 1 1 3 2)) 6)
+
+;27)
+
+(define (concatena a b) (string-append a b))
+
+;(fold concatena "" lista de strings)
+
+(check-expect (fold concatena "" (list "Winter" " " "Is" " " "Coming")) "Winter Is Coming")

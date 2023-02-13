@@ -1,0 +1,470 @@
+\documentclass[12pt,zed]{article}
+\usepackage[utf8]{inputenc}
+
+\title{TP Final Ing Software II}
+\author{Nicolás, Uriel Navall \\ Legajo: N-1159/2 }
+\date{May 2022}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{z-eves}
+\usepackage{dirtree}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{xspace}
+\usepackage{multicol}
+\usepackage{verbatimbox}
+
+\newcommand{\desig}[2]{\item #1 $\approx #2$}
+\newenvironment{designations}
+  {\begin{leftbar}
+    \begin{list}{}{\setlength{\labelsep}{0cm}
+                   \setlength{\labelwidth}{0cm}
+                   \setlength{\listparindent}{0cm}
+                   \setlength{\rightmargin}{\leftmargin}}}
+  {\end{list}\end{leftbar}}
+
+\newcommand{\setlog}{$\{log\}$\xspace}
+\renewcommand{\figurename}{Figura}
+
+\begin{document}
+
+\maketitle
+
+\section*{Requerimientos}
+Se tiene una libreta de un paseador de perros en la cual se agenda las salidas de este para pasear perros. El paseador solo puede pasear cierta cantidad de perros a la vez, dependiendo esto de los tamaños de los perros a pasear. Además el paseador no quiere pasear más de un perro de raza conflictiva a la vez, ni quiere pasear perros de diferentes sexos al mismo tiempo.
+
+Se necesitan operaciones para poder agregar perros a un turno, sacar perros de un turno y obtener los perros a pasear dado un turno.
+
+\section*{Especificación}
+
+Se comienza dando las siguientes designaciones:
+\begin{designations}
+\desig{$n$ es el nombre de un perro}{n \in NOMBRE}
+\desig{$f$ representa un día en particular}{f \in FECHA}
+\desig{$h$ es una hora del día}{h \in HORA}
+\desig{$r$ es una raza de perro}{r \in RAZA}
+\desig{$s$ representa un sexo }{s \in SEXO}
+\desig{$t$ es el tamaño de un perro}{t \in TAMANO}
+\desig{Conjunto de perros a pasear en el turno asociado a la fecha $f$ y la hora $h$}{agenda ($f$,$h$)}
+\end{designations}
+
+Luego introducimos los tipos a utilizar en la especificación
+
+\begin{zed}
+[NOMBRE, FECHA, HORA, RAZA] \\
+\also
+SEXO ::= hembra | macho
+\also
+TAMANO ::= chico | medio | grande
+\end{zed}
+
+Presentaremos la siguiente definición axiomática para representar el "peso" sumado máximo de perros que el paseador puede pasear al mismo tiempo.
+
+\begin{axdef}
+MAX\_PESO: \nat
+\end{axdef}
+
+Además también utilizaremos la definición axiomática $razas\_peligrosas$ para representar el conjunto de razas de perros que el paseador considera peligrosa.
+
+\begin{axdef}
+razas\_peligrosas: \power RAZA \\
+
+\end{axdef}
+
+También será necesario definir el tipo esquema $Perro$ y lo hacemos de la siguiente manera:
+
+\begin{schema}{Perro}
+    nombre : NOMBRE\\
+    raza : RAZA \\
+    
+    tamano: TAMANO \\
+    sexo: SEXO 
+\end{schema}
+
+Ahora podemos definir el espacio de estados de la especificación y su estado inicial:
+
+\begin{schema}{Sist}
+
+
+    agenda : FECHA \cross HORA \pfun \power Perro \\
+    
+\end{schema}
+
+\begin{schema}{SistInit}
+Sist
+\where
+agenda = \emptyset \\
+
+
+\end{schema}
+
+Como no tiene sentido tener guardado en la agenda un turno en la que no haya ningún perro (que surge al eliminar el único perro de un turno) pasaremos entonces a eliminar los turnos cuando se elimina el último perro de este, lo que deriva en la siguiente invariante de estado que nuestra especificación deberá cumplir:
+
+\begin{schema}{SistInv}
+Sist
+\where
+
+\emptyset \notin (\ran agenda) \\
+
+\end{schema}
+
+
+Comenzaremos ahora a modelar las operaciones de nuestro sistema empezando con la operación para agregar un perro a un turno. Se definiría primero el esquema del caso exitoso y luego los esquemas que corresponden a los errores, para al final integrar todo en un mismo esquema.
+
+
+\begin{schema}{AgregarPerroSalidaOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.raza \notin razas\_peligrosas \lor \\ razas\_peligrosas \cap \{p : Perro | p \in (agenda (f?,h?)) \spot p.raza\}=\emptyset \\
+p?.sexo \in \{x : Perro | x \in (agenda (f?,h?)) @ x.sexo\}\\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=grande @ x\}*3 < MAX\_PESO \\
+agenda'=agenda \oplus \{(f?,h?) \mapsto (agenda (f?,h?)) \cup \{ p? \} \}  \\
+
+\end{schema}
+
+
+\begin{schema}{AgregarPerroSalidaTurnoNuevoOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+
+(f?,h?) \notin \dom agenda \\
+
+
+
+
+
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=grande @ x\}*3 < MAX\_PESO \\
+agenda'=agenda \oplus \{(f?,h?) \mapsto \{ p? \} \} \\
+
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaYaExiste}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom agenda \land p? \in agenda (f?,h?) \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaConflictoRaza}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.raza \in razas\_peligrosas \land razas\_peligrosas \cap \{ p : agenda (f?,h?) @ p.raza\} \neq \emptyset \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaConflictoSexo}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.sexo \notin \{ x : agenda (f?,h?) @ x.sexo\}
+
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaMuyPesado}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=grande @ x\}*3 \geq MAX\_PESO \\
+\end{schema}
+
+\begin{zed}
+AgregarPerroSalida \defs AgregarPerroSalidaOk \lor AgregarPerroSalidaTurnoNuevoOk \lor \\ AgregarPerroSalidaYaExiste \lor AgregarPerroSalidaConflictoRaza \lor \\ AgregarPerroSalidaConflictoSexo  \lor AgregarPerroSalidaMuyPesado
+\end{zed}
+
+Ahora definiremos la operación para remover a un perro de un turno:
+
+\begin{schema}{QuitarPerroSalidaOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+
+p? \in \ agenda (f?,h?) \\
+agenda (f?,h?) \neq \{p?\} \\
+
+
+agenda'=agenda \oplus \{(f?,h?) \mapsto agenda (f?,h?) \setminus \{p?\}\} \\
+
+\end{schema}
+
+\begin{schema}{QuitarPerroSalidaYTurnoOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+
+p? \in \ agenda (f?,h?) \\
+agenda (f?,h?) = \{p?\} \\
+
+
+agenda'=\{(f?,h?)\} \ndres agenda \\
+
+\end{schema}
+
+\begin{schema}{TurnoNoExiste}
+\Xi Sist \\
+f?: FECHA \\
+h?: HORA \\
+\where
+
+(f?,h?) \notin \dom agenda \\
+\end{schema}
+
+\begin{schema}{QuitarPerroSalidaNoExistePerro}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+p? \notin \ (agenda (f?,h?)) \\
+\end{schema}
+
+\begin{zed}
+QuitarPerroSalida \defs QuitarPerroSalidaOk \lor QuitarPerroSalidaYTurnoOk \lor \\ TurnoNoExiste \lor QuitarPerroSalidaNoExistePerro
+\end{zed}
+
+Y por último definiremos una operación que nos devuelve los perros a pasear de un turno dado:
+
+\begin{schema}{PerrosAPasearOk}
+\Xi Sist \\
+f?: FECHA \\
+h?: HORA \\
+prs!: \power Perro\\
+\where
+(f?,h?) \in \dom \ agenda \\
+
+prs!= agenda (f?,h?) \\
+\end{schema}
+
+\begin{zed}
+PerrosAPasear \defs PerrosAPasearOk \lor TurnoNoExiste
+\end{zed}
+
+\newpage
+
+\section*{Simulaciones}
+\subsection*{Simulación no tipada}
+
+En la simulación agrego un par de perros en un mismo turno, y luego intento agregar uno de los perros ya ingresados en el mismo turno. Luego agrego este perro en otro turno e intento eliminar un perro que no está en este último turno. Intento devolver los perros de un turno que no existe y para terminar devuelvo los perros del último turno que modifiqué. \\
+
+Simulación:
+
+\begin{verbatim}
+    sistInit(Agenda1) &
+    Razas_Peligrosas = {pitbull} & Max_Peso = 10 &
+    agregarPerroSalida(Razas_Peligrosas, Max_Peso, Agenda1, Agenda2,
+[yill,ovejero_aleman,macho,medio], 34557274,1725892) &
+    agregarPerroSalida(Razas_Peligrosas, Max_Peso, Agenda2, Agenda3,
+[zack,golden_retriever,macho,medio], 34557274,1725892) &
+    agregarPerroSalida(Razas_Peligrosas, Max_Peso, Agenda3, Agenda4,
+[zack,golden_retriever,macho,medio], 34557274,1725892) &
+    agregarPerroSalida(Razas_Peligrosas, Max_Peso, Agenda4, Agenda5,
+[zack,golden_retriever,macho,medio], 204986,246892) &
+    quitarPerroSalida(Agenda5,Agenda6,[yill,ovejero_aleman,macho,medio],
+204986,246892) &
+    perrosAPasear(Agenda6,620867,240876,Prs_o1) &
+    perrosAPasear(Agenda6,204986,246892,Prs_o2).
+\end{verbatim}
+
+En donde la primer respuesta fue la siguiente:
+\begin{verbatim}
+    Agenda1 = {},  
+    Razas_Peligrosas = {pitbull},  
+    Max_Peso = 10,  
+    Agenda2 = {[[34557274,1725892],{[yill,ovejero_aleman,macho,medio]}]},  
+    Agenda3 = {[[34557274,1725892],{[yill,ovejero_aleman,macho,medio],
+[zack,golden_retriever,macho,medio]}]},  
+    Agenda4 = {[[34557274,1725892],{[yill,ovejero_aleman,macho,medio],
+[zack,golden_retriever,macho,medio]}]},  
+    Agenda5 = {[[204986,246892],{[zack,golden_retriever,macho,medio]}],
+[[34557274,1725892],{[yill,ovejero_aleman,macho,medio],
+[zack,golden_retriever,macho,medio]}]},  
+    Agenda6 = {[[204986,246892],{[zack,golden_retriever,macho,medio]}],
+[[34557274,1725892],{[yill,ovejero_aleman,macho,medio],
+[zack,golden_retriever,macho,medio]}]},  
+    Prs_o2 = {[zack,golden_retriever,macho,medio]}
+\end{verbatim}
+
+\subsection*{Simulación tipada}
+
+En la simulación agrego un par de perros en un mismo turno, luego agrego otro perro en otro y quito el primer perro que agregue en el turno original, para luego agregar el perro del segundo turno en el primero también. Por último pido la lista de perros del primer turno al que agregue perros. \\
+
+Simulación:
+
+\begin{verbatim}
+    sistInit(Agenda1) &
+    Razas_Peligrosas = {raza:pitbull} & Max_Peso = 10 &
+    agregarPerroSalida(Razas_Peligrosas,Max_Peso,Agenda1,Agenda2,
+[nombre:mora,raza:caniche,hembra,chico], fecha:249862,hora:293847) &
+    agregarPerroSalida(Razas_Peligrosas,Max_Peso,Agenda2,Agenda3,
+[nombre:pelusa,raza:san_bernardo,hembra,grande],fecha:249862,hora:293847) &
+    agregarPerroSalida(Razas_Peligrosas,Max_Peso,Agenda3,Agenda4,
+[nombre:zack,raza:golden_retriever,macho,medio],fecha:456982,hora:3583) &
+    quitarPerroSalida(Agenda4,Agenda5,[nombre:mora,raza:caniche,hembra,
+chico],fecha:249862,hora:293847) &
+    agregarPerroSalida(Razas_Peligrosas,Max_Peso,Agenda5,Agenda6,
+[nombre:zack,raza:golden_retriever,macho, medio],fecha:249862,hora:293847) &
+    perrosAPasear(Agenda6,fecha:249862,hora:293847,Prs_o) &
+    dec([Agenda1,Agenda2,Agenda3,Agenda4,Agenda5,Agenda6],ag) &
+    dec(Prs_o,set(pr)) & dec(Razas_Peligrosas,set(raza)) & dec(Max_Peso,int).
+\end{verbatim}
+
+En donde la primer respuesta fue la siguiente:
+\begin{verbatim}
+    Agenda1 = {},  
+    Razas_Peligrosas = {raza:pitbull},  
+    Max_Peso = 10,  
+    Agenda2 = {[[fecha:249862,hora:293847],{[nombre:mora,raza:caniche,hembra,
+chico]}]},  
+    Agenda3 = {[[fecha:249862,hora:293847],{[nombre:mora,raza:caniche,hembra,
+chico],[nombre:pelusa,raza:san_bernardo,hembra,grande]}]},  
+    Agenda4 = {[[fecha:456982,hora:3583],{[nombre:zack,raza:golden_retriever,
+macho,medio]}],[[fecha:249862,hora:293847],{[nombre:mora,raza:caniche,hembra,
+chico],[nombre:pelusa,raza:san_bernardo,hembra,grande]}]},  
+    Agenda5 = {[[fecha:456982,hora:3583],{[nombre:zack,raza:golden_retriever,
+macho,medio]}],[[fecha:249862,hora:293847],{[nombre:pelusa,raza:san_bernardo,
+hembra,grande]}]},  
+    Agenda6 = {[[fecha:249862,hora:293847],{[nombre:pelusa,raza:san_bernardo,
+hembra,grande],[nombre:zack,raza:golden_retriever,macho,medio]}],[[fecha:456982,
+hora:3583],{[nombre:zack,raza:golden_retriever,macho,medio]}]},  
+    Prs_o = {[nombre:pelusa,raza:san_bernardo,hembra,grande],[nombre:zack,ra
+za:golden_retriever,macho,medio]}
+\end{verbatim}
+
+\section*{Demostraciones en $\{log\}$}
+
+\subsection*{Demostración n°1}
+
+Se demostrará a continuación que la operación AgregarPerroSalida preserva la invariante SistInv, es decir: \\
+
+\begin{theorem}{AgregarPerroSalidaPI}
+SistInv \land AgregarPerroSalida \implies SistInv'
+\end{theorem}
+
+Teorema el cual se escribe en $\{log\}$ de la siguiente manera:
+
+\begin{verbatim}
+sistInv(Agenda) &
+agregarPerroSalida(Razas_Peligrosas,Max_Peso,Agenda,Agenda_,P_i,F_i,H_i) &
+ran(Agenda_,R) & {} in R &
+dec([Agenda,Agenda_],ag) & dec(P_i,pr) & dec(F_i,fecha) & dec(H_i,hora) &
+dec(Razas_Peligrosas,set(raza)) & dec(R,set(set(pr))) & dec(Max_Peso,int).
+\end{verbatim}
+
+
+\subsection*{Demostración n°2}
+
+
+Se demostrará a continuación que la operación $QuitarPerroSalida$ preserva el invariante $agenda \in \_ \pfun \_$. Lo que se traduce al siguiente teorema: \\
+
+\begin{theorem}{AgendaIsPFun}
+agenda \in \_ \pfun \_ \land QuitarPerroSalida \implies agenda' \in \_ \pfun \_
+\end{theorem}
+
+Teorema el cual se escribe en $\{log\}$ de la siguiente manera:
+
+\begin{verbatim}
+pfun(Agenda) &
+quitarPerroSalida(Agenda,Agenda_,P_i,F_i,H_i) &
+npfun(Agenda_) &
+dec([Agenda,Agenda_],ag) & dec(P_i,pr) & dec(F_i,fecha)&
+dec(H_i,hora).
+\end{verbatim}
+
+La respuesta al correr los teoremas es no, demostrando así los teoremas presentados.
+
+\section*{Demostración en Z/EVES}
+
+\begin{theorem}{notInRanSubset}[X,Y]
+\forall f : X \rel Y; y : Y; C : \power X @ y \notin (\ran f) \implies y \notin \ran (C \ndres f)
+\end{theorem}
+
+\begin{zproof}[notInRanSubset]
+prove;
+apply ranDefinition;
+prove;
+\end{zproof}
+
+\section*{Casos de prueba}
+
+Se busca generar casos de prueba para la operación $AgregarPerroSalida$. Para obtenerlos se utilizarán los siguientes comandos en $Fastest$:
+
+\begin{verbatim}
+    loadspec fastest.tex
+    selop AgregarPerroSalida
+    genalltt
+    addtactic AgregarPerroSalida_DNF_2 SP \cap  razas\_ peligrosas \cap
+\{ p : Perro | p \in agenda ( f? , h? ) @ p . raza \} = \{ \}
+    genalltt
+    genalltca
+    showsch -tcl -o test_classes.txt
+\end{verbatim}
+
+En primera instancia aplicamos la táctica DNF que separara la operación en las clases $AgregarPerroSalida\_DNF_1$, $AgregarPerroSalida\_DNF_2$, $AgregarPerroSalida\_DNF_3$, $AgregarPerroSalida\_DNF_4$, $AgregarPerroSalida\_DNF_5$, $AgregarPerroSalida\_DNF_6$, $AgregarPerroSalida\_DNF_7$.
+
+Luego aplicamos la técnica de partición estándar sobre $\cap$ en la expresión $razas\_ peligrosas \cap \{ p : agenda ( f? , h? ) @ p . raza \} \neq \{ \}$ para particionar la clase de prueba $AgregarPerroSalida\_DNF_2$.
+
+Y de esta manera, obtenemos el árbol de clases de prueba generado por Fastest que puede observarse en la Figura 1.
+
+Por errores de java al ejecutar el comando $genalltca$ en Fastest no se pudo obtener casos de prueba.
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{7cm}
+\dirtree{
+.1 $AgregarPerroSalida\_VIS$.
+.2 $AgregarPerroSalida\_DNF_1$.
+.2 $AgregarPerroSalida\_DNF_2$.
+.3 $AgregarPerroSalida\_SP_1$.
+.3 $AgregarPerroSalida\_SP_2$.
+.3 $AgregarPerroSalida\_SP_3$.
+.3 $AgregarPerroSalida\_SP_4$.
+.3 $AgregarPerroSalida\_SP_5$.
+.3 $AgregarPerroSalida\_SP_6$.
+.3 $AgregarPerroSalida\_SP_7$.
+.3 $AgregarPerroSalida\_SP_8$.
+.2 $AgregarPerroSalida\_DNF_3$.
+.2 $AgregarPerroSalida\_DNF_4$.
+.2 $AgregarPerroSalida\_DNF_5$.
+.2 $AgregarPerroSalida\_DNF_6$.
+.2 $AgregarPerroSalida\_DNF_7$.
+}
+\end{minipage}
+\caption{Árbol de clases de prueba.}
+\end{figure}
+
+\end{document}

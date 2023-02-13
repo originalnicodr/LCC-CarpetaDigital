@@ -1,0 +1,19 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname |10)|) (read-case-sensitive #t) (teachpacks ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")))))
+(require 2htdp/image)
+(define (flaca-o-gorda x) (if (> (image-width x) (image-height x)) "Gorda" (if (< (image-width x) (image-height x)) "Flaca" "Cuadrada" )))
+
+(define (gorda? x) (if (string=? (flaca-o-gorda x) "Gorda") #t #f))
+
+(define (sumaa a b) (+  a b))
+
+(define (area a) (* (image-width a) (image-height a)))
+
+(define (sag l) (foldr sumaa 0 (map area (filter gorda? l))))
+
+(check-expect (sag (list (circle 20 "solid" "red")
+                         (rectangle 40 20 "solid" "blue")
+                         (rectangle 10 20 "solid" "yellow")
+                         (rectangle 30 20 "solid" "green")))
+              1400)

@@ -1,0 +1,23 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |6)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(define-struct mousep [x y])
+(define ALTO 600)
+(define ANCHO 800)
+(define INICIAL (make-mousep (/ ANCHO 2) (/ ALTO 2)))
+(define DELTA 10)
+(define RADIO 50)
+(define (eteclado a k)(cond  [(and (key=? k "up")(<= RADIO (- (mousep-y a) DELTA)))  (make-mousep (mousep-x a)(- (mousep-y a) DELTA))]
+                             [(and (key=? k "down")(>= (- ALTO RADIO) (+ (mousep-y a) DELTA))) (make-mousep (mousep-x a)(+ (mousep-y a) DELTA))]
+                             [(and (key=? k "left")(<= RADIO (- (mousep-x a) DELTA))) (make-mousep (- (mousep-x a) DELTA)(mousep-y a))]
+                             [(and (key=? k "right")(>= (- ANCHO RADIO) (+ (mousep-x a) DELTA))) (make-mousep (+ (mousep-x a) DELTA)(mousep-y a))]
+                             [(key=? k " ") INICIAL]
+                             [else a]))
+(define (emouse n x y e) (cond [(and (string=? e "button-down")(< (+ x RADIO) ANCHO)(> (- x RADIO) 0)(< (+ y RADIO) ALTO)(> (- y RADIO) 0)) (make-mousep x y)]
+                               [else n]))
+(define (dibujar a) (place-image (circle RADIO "solid" "blue") (mousep-x a) (mousep-y a) (empty-scene ANCHO ALTO)))
+
+(big-bang INICIAL [to-draw dibujar]
+                  [on-key eteclado]
+                  [on-mouse emouse])
+                  

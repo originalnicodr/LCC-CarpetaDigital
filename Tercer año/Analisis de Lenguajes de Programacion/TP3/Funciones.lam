@@ -1,0 +1,5 @@
+def Ack = (\m:Nat. R (\n:Nat. suc n) (\rm:Nat->Nat. \pm:Nat. (\n:Nat. R (rm 1) (\rn:Nat. \pn:Nat. (rm rn)) n)) m)
+
+def add = (\m:Nat. \n:Nat. R m (\r:Nat. \pn:Nat. suc r) n)
+
+def sum = (\l:ListNat. RL 0 (\n:Nat. \rl:ListNat. \r:Nat. add n r) l)

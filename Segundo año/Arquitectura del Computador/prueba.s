@@ -1,0 +1,22 @@
+.global main
+ a:.byte 0x1
+  .byte 0x2
+  .byte 0x3
+  .byte 0x4
+  .byte 0x5
+  .byte 0x6
+  .byte 0x7
+  .byte 0x8
+  .byte 0x9
+  .byte 0x10
+  .byte 0xb
+  .byte 0xc
+  .byte 0xd
+  .byte 0xe
+  .byte 0xf
+  .byte 0
+main:
+    movb a, %al
+    movw a, %ax
+    movl a, %eax
+    movq a, %rax

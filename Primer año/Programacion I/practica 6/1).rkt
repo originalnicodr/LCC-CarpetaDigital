@@ -1,0 +1,133 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname |1)|) (read-case-sensitive #t) (teachpacks ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "universe.rkt" "teachpack" "2htdp") (lib "image.rkt" "teachpack" "2htdp")) #f)))
+;1)
+(define (¡ a b) (cond [(zero? a) b]
+                            [(positive? a) (add1 (¡ (sub1 a) b))]
+                            [else "Sos un mal llevado"]))
+;suma natural cambaida de nombre por sol
+;todos los derechos reservados
+
+;(sumanat 3 2)
+
+;adicional
+(define (multiplicar a b) (cond [(zero? a) 0]
+                            [(zero? (sub1 a)) b]
+                                [(positive? a)  (¡ b (multiplicar (sub1 a) b))]))
+
+;(multiplicar 800 1000)
+
+;2)
+(define (^ b a) (cond [(zero? a) 1]
+                             [(positive? a) (multiplicar b (^ (sub1 a) b))]))
+
+;(^ 2 0)
+
+;3)
+
+;(define (intervalo n) (cond [(zero? n) '()]
+                         ;   [(positive? n) (cons n (intervalo (sub1 n)))]))
+
+(define (intervalo n) (cond [(zero? n) '()]
+                            [(positive? n) (append (intervalo (sub1 n)) (cons n '()) ) ]))
+
+;(intervalo 8)
+
+;4)
+
+(define (factnat a) (cond [(zero? a) 1]
+                          [(positive? a) (multiplicar (factnat (sub1 a)) a)]))
+
+;(factnat 4)
+
+;5)
+
+(define (fibnat a) (cond[(zero? a) 1]
+                        [(zero? (sub1 a)) 1]
+                        [(positive? a) (¡ (fibnat (sub1 a)) (fibnat (sub1 (sub1 a))))]))
+
+;(fibnat 5)
+
+;6)
+
+(define (list-fibonacci a) (cond [(zero? a) (cons 1 '())]
+                                 [(positive? a) (cons (fibnat a) (list-fibonacci (sub1 a)))]))
+
+;(check-expect (list-fibonacci 4)              (list 5 3 2 1 1))
+;(check-expect (list-fibonacci 0)              (list 1))
+
+;7)
+
+(define (g n) (cond [(= n 0) 1]
+                    [(= n 1) 2]
+                    [(= n 2) 3]
+                    [(>= n 3) (* (g (- n 1)) (g (- n 2)) (g (- n 3)))]))
+
+(define (list-g a) (cond [(zero? a) (cons 1 '())]
+                         [(positive? a) (cons (g a) (list-g (sub1 a)))]))
+
+;(check-expect (list-g 4)              (list 36 6 3 2 1))
+;(check-expect (list-g 0)              (list 1))
+
+;8)
+
+(define (multiplos a b) (cond [(zero? a) '()]
+                              [(positive? a) (cons (* a b) (multiplos (sub1 a) b))]))
+
+;(check-expect (multiplos 4 7) (list 28 21 14 7))
+
+;9)
+
+
+(define FONDO (empty-scene 200 200))
+(define (circulos a)(cond [(zero? a) FONDO]
+                           [(positive? a) (place-image (circle (sqr a) "outline" "blue") 100 100 (circulos (sub1 a)))]))
+
+;10)
+(define (cuadrados a b)(cond [(zero? a) FONDO]
+                           [(positive? a) (place-image (rotate b(square (sqr a) "outline" "blue")) 100 100 (cuadrados (sub1 a) (+ 20 b)))]))
+
+;11)
+
+(define (intereses c n i) (cond [(zero? n) '()]
+                                [(positive? n) (cons (* c (/ i 1200) n) (intereses c (sub1 n) i))]))
+
+(define (sumal a b) (cond [(and (empty? a) (empty? b)) '()]
+                          [(and (cons? a) (cons? b)) (cons (+ (first a) (first b)) (sumal (rest a) (rest b)))]))
+
+(define (cuotas t n i) (reverse (cond [(zero? n) '()]
+                                      [(positive? n) (sumal (make-list n (/ t n)) (intereses (/ t n) n i))])))
+
+;(check-expect (cuotas 10000 0 18)              '())
+;(check-expect (cuotas 10000 1 12)              (list 10100))
+;(check-expect (cuotas 30000 3 12)              (list 10100 10200 10300))
+;(check-expect (cuotas 100000 4 18)              (list 25375 25750 26125 26500))
+
+;12)
+
+(define CARAS 37)
+(define (simular-dado n) (cond [(zero? n) empty]
+                               [(positive? n) (cons (random CARAS) (simular-dado (sub1 n)))]))
+
+(define MAX 60000)
+(define EXPERIMENTO (simular-dado MAX))
+(define VALORES (intervalo CARAS))
+
+(define (n? n a) (if (= n a) #t #f))
+
+(define (frecuencia n l) (foldr + 0 (filtro n l)))
+
+(define (filtro n l) (cond [(empty? l) '()]
+                           [(cons? l) (cons (if (= n (first l)) 1 0) (filtro n (rest l)))]))
+
+(define (frecuencia-relativa n l) (/  (frecuencia n l) (length l)))
+
+(define (frec-rel-exp n) (frecuencia-relativa n EXPERIMENTO))
+(define FRECUENCIAS-RELATIVAS (map frec-rel-exp VALORES))
+
+;Deberian dar 1/6 en cada numero
+;Para estar mas cerca del valor esperado debo aumentar el valor de MAX
+;Si usamos un dado de 2 caras tendriamos una frecuencia-relativa de 1/2, es decir, estariamos simulando tirar una moneda
+
+;Deberia dar 1/37 en cada numero
+;Para estar mas cerca del valor esperado debemos aumentar la cantidad de experimentos realizados

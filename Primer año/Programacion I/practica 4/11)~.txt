@@ -1,0 +1,22 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |11)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(define-struct alumno [nombre promedio asistencia])
+;un alumno es (make-alumno nombre promedio asistencia)
+;Representa el nombre de un alumno con un string, y su promedio y asistencia con numeros
+
+(define NicoN (make-alumno "Nicolas" 6 100))
+
+;Representa a un alumno con la estructura "alumno" y su condicion mediante un string
+;condicion: Alumno -> String
+;Toma una estructura alumno e indica si esta "libre", "regular" o "promovido".
+(define (condicion a) (if (alumno?? a) (cond [(and (< 60 (alumno-asistencia a)) (<= 8 (alumno-promedio a))) "Promovido"]
+                            [(and (< 60 (alumno-asistencia a)) (<= 6 (alumno-promedio a))) "Regular"]
+                            [(or (< 60 (alumno-asistencia a)) (and (< 60 (alumno-asistencia a)) (> 6 (alumno-promedio a)))) "Libre"])
+                          "Tipo de dato inválido"))
+
+;Representa a un alumno con la estructura "alumno"
+;alumno? Alumno -> Bool
+;Si la estructura ingresada es un Alumno (con promedio y asistencia en los parametros adecuados) entregara verdadero, sino, falso.
+(define (alumno?? a) (cond [(and (<= 0 (alumno-promedio a)) (>= 10 (alumno-promedio a)) (<= 0 (alumno-asistencia a)) (>= 100 (alumno-asistencia a))) #true]
+                          [else #false]))

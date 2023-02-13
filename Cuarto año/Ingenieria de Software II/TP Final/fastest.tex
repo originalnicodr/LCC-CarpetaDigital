@@ -1,0 +1,173 @@
+\begin{zed}
+[NOMBRE, FECHA, HORA, RAZA] \\
+\also
+SEXO ::= hembra | macho
+\also
+TAMANO ::= chico | medio | grande
+\end{zed}
+
+
+\begin{axdef}
+MAX\_PESO: \nat
+\end{axdef}
+
+\begin{axdef}
+razas\_peligrosas: \power RAZA \\
+\end{axdef}
+
+\begin{schema}{Perro}
+    nombre : NOMBRE\\
+    raza : RAZA \\
+    tamano: TAMANO \\
+    sexo: SEXO 
+\end{schema}
+
+
+\begin{schema}{Sist}
+    agenda : FECHA \cross HORA \pfun \power Perro \\
+\end{schema}
+
+\begin{schema}{SistInit}
+Sist
+\where
+agenda = \emptyset \\
+\end{schema}
+
+\begin{schema}{SistInv}
+Sist
+\where
+\emptyset \notin (\ran agenda) \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.raza \notin razas\_peligrosas \lor \\ razas\_peligrosas \cap \{p : Perro | p \in (agenda (f?,h?)) \spot p.raza\}=\emptyset \\
+p?.sexo \in \{x : Perro | x \in (agenda (f?,h?)) @ x.sexo\}\\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=grande @ x\}*3 < MAX\_PESO \\
+agenda'=agenda \oplus \{(f?,h?) \mapsto (agenda (f?,h?)) \cup \{ p? \} \}  \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaTurnoNuevoOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \notin \dom agenda \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda' (f?,h?)) \land  x.tamano=grande @ x\}*3 < MAX\_PESO \\
+agenda'=agenda \oplus \{(f?,h?) \mapsto \{ p? \} \} \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaYaExiste}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom agenda \land p? \in agenda (f?,h?) \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaConflictoRaza}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.raza \in razas\_peligrosas \land razas\_peligrosas \cap \{ p : agenda (f?,h?) @ p.raza\} \neq \emptyset \\
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaConflictoSexo}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+p?.sexo \notin \{ x : agenda (f?,h?) @ x.sexo\}
+\end{schema}
+
+\begin{schema}{AgregarPerroSalidaMuyPesado}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in (\dom agenda) \land p? \notin (agenda (f?,h?)) \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=chico @ x\} \ + \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=medio @ x\}*2 \ + \\
+\#\{x : Perro | x \in (agenda (f?,h?)) \cup \{p?\} \land x.tamano=grande @ x\}*3 \geq MAX\_PESO \\
+\end{schema}
+
+\begin{zed}
+AgregarPerroSalida == AgregarPerroSalidaOk \lor AgregarPerroSalidaTurnoNuevoOk \lor \\ AgregarPerroSalidaYaExiste \lor AgregarPerroSalidaConflictoRaza \lor \\ AgregarPerroSalidaConflictoSexo  \lor AgregarPerroSalidaMuyPesado
+\end{zed}
+
+\begin{schema}{QuitarPerroSalidaOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+p? \in \ agenda (f?,h?) \\
+agenda (f?,h?) \neq \{p?\} \\
+agenda'=agenda \oplus \{(f?,h?) \mapsto agenda (f?,h?) \setminus \{p?\}\} \\
+\end{schema}
+
+\begin{schema}{QuitarPerroSalidaYTurnoOk}
+\Delta Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+p? \in \ agenda (f?,h?) \\
+agenda (f?,h?) = \{p?\} \\
+agenda'=\{(f?,h?)\} \ndres agenda \\
+\end{schema}
+
+\begin{schema}{TurnoNoExiste}
+\Xi Sist \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \notin \dom agenda \\
+\end{schema}
+
+\begin{schema}{QuitarPerroSalidaNoExistePerro}
+\Xi Sist \\
+p?: Perro \\
+f?: FECHA \\
+h?: HORA \\
+\where
+(f?,h?) \in \dom \ agenda \\
+p? \notin \ (agenda (f?,h?)) \\
+\end{schema}
+
+\begin{zed}
+QuitarPerroSalida == QuitarPerroSalidaOk \lor QuitarPerroSalidaYTurnoOk \lor \\ TurnoNoExiste \lor QuitarPerroSalidaNoExistePerro
+\end{zed}
+
+\begin{schema}{PerrosAPasearOk}
+\Xi Sist \\
+f?: FECHA \\
+h?: HORA \\
+prs!: \power Perro\\
+\where
+(f?,h?) \in \dom \ agenda \\
+prs!= agenda (f?,h?) \\
+\end{schema}
+
+\begin{zed}
+PerrosAPasear == PerrosAPasearOk \lor TurnoNoExiste
+\end{zed}

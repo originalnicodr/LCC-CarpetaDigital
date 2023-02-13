@@ -1,0 +1,22 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |8)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(define ANCHO 800)
+(define ALTO 200)
+(define scolor "white")
+(define ssize 20)
+
+(define cielo (rectangle ANCHO ALTO "solid" "blue")) ;cielo azul
+(define (teclado a k) (if (string=? k "\b") cielo a))
+(define (click a x y e) (cond [(and (> (- x (/ ssize 2)) (/ ssize 4)) (> (- y (/ ssize 2)) (/ ssize 4)) (< (+ x (/ ssize 2)) (- ANCHO (/ ssize 4))) (< (+ y (/ ssize 2)) (- ALTO (/ ssize 4))) (string=? e "button-down")) (overlay/offset (star ssize "solid" scolor) (- (/ ANCHO 2) x) (- (/ ALTO 2) y) a)]
+                              [else a])) ;agrega estrellas
+;(define (dcielo a)
+(define (dibujar a) (place-image a  (/ ANCHO 2) (/ ALTO 2) (empty-scene ANCHO ALTO)))
+
+(big-bang cielo [to-draw dibujar]
+                [on-key teclado]
+                [on-mouse click])
+
+;(place-image (star ssize "solid" scolor) 0 0 (empty-scene ANCHO ALTO))
+  ;(overlay/xy (star ssize "solid" scolor) (+ (- 0 x) ssize) (+ (- 0 y) ssize) a)
+  ;(place-image (rectangle ANCHO ALTO "solid" "blue") (/ ANCHO 2) (/ ALTO 2) (empty-scene ANCHO ALTO))

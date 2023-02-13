@@ -1,0 +1,5 @@
+def ifThenElse = id
+
+def sqrt' = Y (\f.\x y. ifThenElse is0((mult x x) pred (add y 1)) (f (pred x) y) x)
+
+def sqrt = \x. sqrt' x x

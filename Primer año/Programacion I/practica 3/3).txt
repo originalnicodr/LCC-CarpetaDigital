@@ -1,0 +1,32 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |3)|) (read-case-sensitive #t) (teachpacks ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.rkt" "teachpack" "2htdp") (lib "universe.rkt" "teachpack" "2htdp")))))
+(require 2htdp/image)
+(require 2htdp/universe)
+
+
+(define (dcirculo n) (cond [(< n 50) (circle n "solid" "yellow")]
+                             [(< n 100) (circle n "solid" "red")]
+                             [(> n 99) (circle n "solid"  "green")]))
+; pantalla : Number -> Image
+; transforma el estado del sistema en una imagen a mostrar a través
+; de la cláusula to-draw
+(define (pantalla n) (place-image (dcirculo n) 150 150 (empty-scene 300 300)))
+; decrementar : Number -> Number
+; Devuelve el predecesor de un número positivo.
+; Si el número es 0, devuelve 100. 
+  (define (decrementar n)(if (= n 0) 100 (- n 1)))
+
+; incrementar : Number -> Number
+; suma uno a su argumento
+ (define (incrementar n) (if (= n 150) 0 (+ n 1)))
+ 
+ ; eventosTeclado: Estado String -> Estado
+(define (eventosTeclado n k) (if (number? (string->number k)) (* (string->number k) 10) n))
+
+(big-bang 100                   ; estado inicial del sistema
+ 
+          [to-draw pantalla]       ; dibuja en la pantalla 
+                                   ; el círculo en el estado actual
+          [on-tick incrementar]
+          [on-key eventosTeclado])
